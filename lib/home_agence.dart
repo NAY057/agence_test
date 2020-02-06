@@ -18,12 +18,12 @@ class _HomeState extends State<Home> {
     return Center(
       child: Container(
         width: (maxWidth / 2) - 10,
-        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+        margin: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
         child: Text(
           text,
           style: TextStyle(
               fontSize: 12,
-              fontFamily: "Montserrat",
+              fontFamily: "fontFamily",
               fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
@@ -54,6 +54,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    maxWidth = MediaQuery.of(context).size.width;
     return Scaffold(
         key: _scaffoldKey,
         drawer: Burger_drawer(),
@@ -75,20 +76,25 @@ class _HomeState extends State<Home> {
             },
           ),
         ),
-        body: Center(
-          child: CupertinoSegmentedControl<int>(
-            borderColor: themeColor,
-            children: {
-              0: segmentedControlConfig("PENDIENTES"),
-              1: segmentedControlConfig("REALIZADOS"),
-            },
-            onValueChanged: (index) => updateListview(index),
-            groupValue: segmentedControl,
-            selectedColor: themeColor,
-            pressedColor: Colors.white,
-            unselectedColor: Colors.white,
-            padding: EdgeInsets.all(0),
-          ),
-        ));
+         body: Column(
+          children: <Widget>[
+            Center(
+              child: CupertinoSegmentedControl<int>(
+                borderColor: themeColor,
+                children: {
+                  0: segmentedControlConfig("Por Consultor"),
+                  1: segmentedControlConfig("Por Cliente"),
+                },
+                onValueChanged: (index) => updateListview(index),
+                groupValue: segmentedControl,
+                selectedColor: backColor,
+                pressedColor: themeColor,
+                unselectedColor: themeColor,
+                padding: EdgeInsets.all(0),
+              ),
+            ),
+          ],
+        ) 
+        );
   }
 }
