@@ -13,6 +13,7 @@ class _HomeState extends State<Home> {
   GlobalKey<ScaffoldState> _scaffoldKey;
   double maxWidth;
   int segmentedControl;
+  String tittle;
 
   Center segmentedControlConfig(String text) {
     return Center(
@@ -31,21 +32,38 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Widget list1() {
+    return ListView(
+      children: <Widget>[],
+    );
+  }
+
+  Widget list2() {
+    ListView();
+  }
+
   updateListview(int index) {
     setState(() {
       segmentedControl = index;
     });
     switch (segmentedControl) {
       case 0:
+        setState(() {
+          tittle = "Consultores";
+        });
         break;
 
       case 1:
+        setState(() {
+          tittle = "Clientes";
+        });
         break;
     }
   }
 
   @override
   void initState() {
+    tittle = "Consultores";
     _scaffoldKey = new GlobalKey();
     segmentedControl = 0;
     updateListview(segmentedControl);
@@ -76,7 +94,7 @@ class _HomeState extends State<Home> {
             },
           ),
         ),
-         body: Column(
+        body: Column(
           children: <Widget>[
             Center(
               child: CupertinoSegmentedControl<int>(
@@ -93,8 +111,50 @@ class _HomeState extends State<Home> {
                 padding: EdgeInsets.all(0),
               ),
             ),
+            InkWell(
+              child: Container(
+                margin: EdgeInsets.symmetric(vertical: 20),
+                color: backColor,
+                child: Container(
+                  margin: EdgeInsets.all(10),
+                  child: Text(
+                    "Periodo",
+                    style: getTextStyle(20, false, themeColor, "fontFamily"),
+                  ),
+                ),
+              ),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(left: 10),
+                  child: Text(
+                    tittle,
+                    style: getTextStyle(20, true, backColor, "fontFamily"),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(child: list1()),
+            Row(
+              children: <Widget>[
+                Container(
+                  child: Text(
+                    "agregar",
+                    style: getTextStyle(15, false, backColor, "fontFamily"),
+                  ),
+                ),
+                Container(
+                  child: Text(
+                    "quitar",
+                    style: getTextStyle(15, false, backColor, "fontFamily"),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(child: list1()),
           ],
-        ) 
-        );
+        ));
   }
 }
