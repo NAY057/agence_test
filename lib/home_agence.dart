@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:agence_test/config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'drawer.dart';
+import 'package:http/http.dart' as http;
+
 
 class Home extends StatefulWidget {
   @override
@@ -14,6 +17,29 @@ class _HomeState extends State<Home> {
   double maxWidth;
   int segmentedControl;
   String tittle;
+  List list;
+  Future<List> decodeData;
+
+/*   Future<List> getData() async {
+    //var url = 'http://bdagencetest.000webhostapp.com/get.php';
+    var url = "http://192.168.2.100/get.php";
+    http.Response response = await http.get(url);
+    print("ENTRE");
+    Map<String ,dynamic> data = jsonDecode(response.body);
+    //print(response.body.toString());
+    print(data);
+  } */
+
+    Future<List> getData(Future<List> decodeData) async {
+    final response = await http.get("https://bdagencetest.000webhostapp.com/get.php");
+    //print(response.body.toString());
+    var encode = json.encode(response.body);
+    var data = json.decode(encode);
+    Future<List> decodeData;
+    data = decodeData;
+    print(data.toString());
+    return data;
+  }
 
   Center segmentedControlConfig(String text) {
     return Center(
@@ -32,11 +58,31 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget list1() {
-    return ListView(
-      children: <Widget>[],
+  Widget list1(Future<List> decodeData) {
+    return new FutureBuilder<List>(
+      future: getData(decodeData),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) print(snapshot.error);
+        return snapshot.hasData
+            ? ListView.builder(
+      itemCount: list == null? 0 : list.length,
+      itemBuilder: (context, i){
+          print("EEEEEEEENNNTTTRRREEEE");
+          print(decodeData);
+        return Container(
+          child: Text(list[i][decodeData],
+          style: getTextStyle(16, false, backColor, "fontFamily"),),
+        );
+      }
+      
+      )
+            : new Center(
+                child: new CircularProgressIndicator(),
+              );
+      },
     );
   }
+
 
   Widget list2() {
     ListView();
@@ -69,6 +115,7 @@ class _HomeState extends State<Home> {
     updateListview(segmentedControl);
     super.initState();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -136,25 +183,58 @@ class _HomeState extends State<Home> {
                 ),
               ],
             ),
-            Expanded(child: list1()),
-            Row(
-              children: <Widget>[
-                Container(
-                  child: Text(
-                    "agregar",
-                    style: getTextStyle(15, false, backColor, "fontFamily"),
-                  ),
-                ),
-                Container(
-                  child: Text(
-                    "quitar",
-                    style: getTextStyle(15, false, backColor, "fontFamily"),
-                  ),
-                ),
-              ],
+            Expanded(child: list1(decodeData)),
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                      margin: EdgeInsets.all(10),
+                      color: backColor,
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: themeColor,
+                        size: 30,
+                      )),
+                  Container(
+                      color: backColor,
+                      child: Icon(
+                        Icons.keyboard_arrow_up,
+                        color: themeColor,
+                        size: 30,
+                      )),
+                ],
+              ),
             ),
-            Expanded(child: list1()),
+            Expanded(child: list1(decodeData)),
           ],
         ));
   }
 }
+
+/*   class ItemList extends StatelessWidget {
+  final List list;
+  final Future<List> decodeData;
+  ItemList({this.list, this.decodeData});
+
+  @override
+  Widget build(BuildContext context) {
+    return new ListView.builder(
+      itemCount: list == null? 0 : list.length,
+      itemBuilder: (context, i){
+          print("EEEEEEEENNNTTTRRREEEE");
+          print(decodeData);
+        return Container(
+          child: Text(list[i][decodeData],
+          style: getTextStyle(16, false, backColor, "fontFamily"),),
+        );
+      }
+      
+      );
+  }
+  } */
+
+
+
+
+
