@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'config.dart';
 
-class Burger_drawer extends StatefulWidget {
+class BurgerDrawer extends StatefulWidget {
   @override
-  _Burger_drawerState createState() => _Burger_drawerState();
+  _BurgerDrawerState createState() => _BurgerDrawerState();
 }
 
-class _Burger_drawerState extends State<Burger_drawer> {
+class _BurgerDrawerState extends State<BurgerDrawer> {
   double maxWidthOption;
 
   @override

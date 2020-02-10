@@ -1,13 +1,16 @@
-import 'dart:convert';
-
 import 'package:agence_test/config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'drawer.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'package:flutter_picker/flutter_picker.dart';
 
 class Home extends StatefulWidget {
+  final List list;
+  Home({this.list});
+
   @override
   _HomeState createState() => _HomeState();
 }
@@ -17,8 +20,8 @@ class _HomeState extends State<Home> {
   double maxWidth;
   int segmentedControl;
   String tittle;
+  String newsType;
   List list;
-  Future<List> decodeData;
 
 /*   Future<List> getData() async {
     //var url = 'http://bdagencetest.000webhostapp.com/get.php';
@@ -30,15 +33,39 @@ class _HomeState extends State<Home> {
     print(data);
   } */
 
-    Future<List> getData(Future<List> decodeData) async {
+/*     Future<List>getData(encode) async {
+
     final response = await http.get("https://bdagencetest.000webhostapp.com/get.php");
     //print(response.body.toString());
-    var encode = json.encode(response.body);
-    var data = json.decode(encode);
-    Future<List> decodeData;
-    data = decodeData;
-    print(data.toString());
-    return data;
+    dynamic encode = json.encode(response.body);
+    
+    //var data = json.decode(encode);
+    //Future<List> decodeData;
+    //data = decodeData;
+    //print(encode);
+    return encode;
+  } */
+
+/*   Future<List<UserInfo>> getData(newsType) async {
+ 
+    String link = "https://bdagencetest.000webhostapp.com/get.php";
+    var res = await http
+        .get(Uri.encodeFull(link));
+      //print(res.body);
+      if (res.statusCode == 200) {
+        var data = json.decode(res.body);
+        var rest = data["UserInfo"] as List;
+        print(rest);
+        list = rest.map<UserInfo>((json) => UserInfo.fromJson(json)).toList();
+      }
+      print(list.toString());
+    return list;
+  } */
+
+  Future<List> getData() async {
+    final response =
+        await http.get("https://bdagencetest.000webhostapp.com/get.php");
+    return json.decode(response.body);
   }
 
   Center segmentedControlConfig(String text) {
@@ -58,34 +85,38 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget list1(Future<List> decodeData) {
+  Widget itemList(list) {
+    return new ListView.builder(
+      shrinkWrap: false,
+      itemCount: list == null ? 0 : list.length,
+      itemBuilder: (context, i) {
+        return new Container(
+            padding: const EdgeInsets.all(10.0),
+            child: segmentedControl == 0
+                ? InkWell(
+                    child: Container(
+                      child: Text(list[i]['no_usuario']),
+                    ),
+                  )
+                : Container());
+      },
+    );
+  }
+
+  Widget list1(list) {
     return new FutureBuilder<List>(
-      future: getData(decodeData),
+      future: getData(),
       builder: (context, snapshot) {
         if (snapshot.hasError) print(snapshot.error);
         return snapshot.hasData
-            ? ListView.builder(
-      itemCount: list == null? 0 : list.length,
-      itemBuilder: (context, i){
-          print("EEEEEEEENNNTTTRRREEEE");
-          print(decodeData);
-        return Container(
-          child: Text(list[i][decodeData],
-          style: getTextStyle(16, false, backColor, "fontFamily"),),
-        );
-      }
-      
-      )
+            ? itemList(
+                snapshot.data,
+              )
             : new Center(
                 child: new CircularProgressIndicator(),
               );
       },
     );
-  }
-
-
-  Widget list2() {
-    ListView();
   }
 
   updateListview(int index) {
@@ -116,13 +147,70 @@ class _HomeState extends State<Home> {
     super.initState();
   }
 
+ showPickerDateRange(BuildContext context) {
+    Picker ps = new Picker(
+        hideHeader: true,
+        adapter: new DateTimePickerAdapter(type: PickerDateTimeType.kYM),
+        onConfirm: (Picker picker, List value) {
+          //print((picker.adapter as DateTimePickerAdapter).value);
+        });
+
+    Picker pe = new Picker(
+        hideHeader: true,
+        adapter: new DateTimePickerAdapter(type: PickerDateTimeType.kYM),
+        onConfirm: (Picker picker, List value) {
+          //print((picker.adapter as DateTimePickerAdapter).value);
+        });
+
+
+    List<Widget> actions = [
+      FlatButton(
+          onPressed: () {
+            Future.delayed(Duration.zero, () {
+              Navigator.of(context).pop();
+              });
+
+          },
+          child: new Text(PickerLocalizations.of(context).cancelText)),
+      FlatButton(
+          onPressed: () {
+            Future.delayed(Duration.zero, () {
+              Navigator.of(context).pop();
+              ps.onConfirm(ps, ps.selecteds);
+              pe.onConfirm(pe, pe.selecteds);
+              });
+          },
+          child: new Text(PickerLocalizations.of(context).confirmText))
+    ];
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new AlertDialog(
+            title: Text("Select Date Range"),
+            actions: actions,
+            content: Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text("Begin:"),
+                  ps.makePicker(),
+                  Text("End:"),
+                  pe.makePicker()
+                ],
+              ),
+            ),
+          );
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
     maxWidth = MediaQuery.of(context).size.width;
     return Scaffold(
         key: _scaffoldKey,
-        drawer: Burger_drawer(),
+        drawer: BurgerDrawer(),
         appBar: AppBar(
           backgroundColor: backColor,
           centerTitle: true,
@@ -159,6 +247,9 @@ class _HomeState extends State<Home> {
               ),
             ),
             InkWell(
+              onTap: () {
+                showPickerDateRange(context);
+              },
               child: Container(
                 margin: EdgeInsets.symmetric(vertical: 20),
                 color: backColor,
@@ -183,58 +274,33 @@ class _HomeState extends State<Home> {
                 ),
               ],
             ),
-            Expanded(child: list1(decodeData)),
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                      margin: EdgeInsets.all(10),
-                      color: backColor,
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: themeColor,
-                        size: 30,
-                      )),
-                  Container(
-                      color: backColor,
-                      child: Icon(
-                        Icons.keyboard_arrow_up,
-                        color: themeColor,
-                        size: 30,
-                      )),
-                ],
-              ),
-            ),
-            Expanded(child: list1(decodeData)),
+            Expanded(child: list1(list))
           ],
         ));
   }
 }
 
-/*   class ItemList extends StatelessWidget {
+/* class ItemList extends StatelessWidget {
   final List list;
-  final Future<List> decodeData;
-  ItemList({this.list, this.decodeData});
+
+  ItemList({this.list,});
 
   @override
   Widget build(BuildContext context) {
     return new ListView.builder(
-      itemCount: list == null? 0 : list.length,
-      itemBuilder: (context, i){
-          print("EEEEEEEENNNTTTRRREEEE");
-          print(decodeData);
-        return Container(
-          child: Text(list[i][decodeData],
-          style: getTextStyle(16, false, backColor, "fontFamily"),),
+      itemCount: list == null ? 0 : list.length,
+      itemBuilder: (context, i) {
+        return new Container(
+          padding: const EdgeInsets.all(10.0),
+          child: segmentedControl==0? InkWell(
+              child:  Container(
+                child: Text(list[i]['no_usuario']),
+            ),
+          ):Container(
+
+          )
         );
-      }
-      
-      );
+      },
+    );
   }
-  } */
-
-
-
-
-
+} */
