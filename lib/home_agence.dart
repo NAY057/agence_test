@@ -1,15 +1,13 @@
 import 'package:agence_test/config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'drawer.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_picker/flutter_picker.dart';
+import 'home_components/relatorio.dart';
 
 class Home extends StatefulWidget {
-  final List list;
-  Home({this.list});
 
   @override
   _HomeState createState() => _HomeState();
@@ -22,7 +20,8 @@ class _HomeState extends State<Home> {
   String tittle;
   String newsType;
   List list;
-
+  String _dateBigin = "Periodo de Inicio";
+  String _dateEnd = "Periodo de Final";
 /*   Future<List> getData() async {
     //var url = 'http://bdagencetest.000webhostapp.com/get.php';
     var url = "http://192.168.2.100/get.php";
@@ -90,20 +89,55 @@ class _HomeState extends State<Home> {
       shrinkWrap: false,
       itemCount: list == null ? 0 : list.length,
       itemBuilder: (context, i) {
+    String userName = list[i]['no_usuario'];
         return new Container(
             padding: const EdgeInsets.all(10.0),
             child: segmentedControl == 0
-                ? InkWell(
-                    child: Container(
-                      child: Text(list[i]['no_usuario']),
-                    ),
+                ? Row(
+                    children: <Widget>[
+                      Container(
+                        height: 30,
+                        child: Text(
+                          userName,
+                          style: getTextStyle(
+                              15, false, Colors.black, "fontFamily"),
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (BuildContext context) => Relatorio(userName: list[i]['no_usuario'],)));
+                              },
+                              child: Container(
+                                child: Icon(Icons.table_chart),
+                              ),
+                            ),
+                            InkWell(
+                              child: Container(
+                                margin: EdgeInsets.all(5),
+                                child: Icon(Icons.insert_chart),
+                              ),
+                            ),
+                            InkWell(
+                              child: Container(
+                                child: Icon(Icons.pie_chart),
+                              ),
+                            )
+                          ],
+                        ),
+                      )
+                    ],
                   )
                 : Container());
       },
     );
   }
 
-  Widget list1(list) {
+  Widget list1() {
     return new FutureBuilder<List>(
       future: getData(),
       builder: (context, snapshot) {
@@ -147,64 +181,6 @@ class _HomeState extends State<Home> {
     super.initState();
   }
 
- showPickerDateRange(BuildContext context) {
-    Picker ps = new Picker(
-        hideHeader: true,
-        adapter: new DateTimePickerAdapter(type: PickerDateTimeType.kYM),
-        onConfirm: (Picker picker, List value) {
-          //print((picker.adapter as DateTimePickerAdapter).value);
-        });
-
-    Picker pe = new Picker(
-        hideHeader: true,
-        adapter: new DateTimePickerAdapter(type: PickerDateTimeType.kYM),
-        onConfirm: (Picker picker, List value) {
-          //print((picker.adapter as DateTimePickerAdapter).value);
-        });
-
-
-    List<Widget> actions = [
-      FlatButton(
-          onPressed: () {
-            Future.delayed(Duration.zero, () {
-              Navigator.of(context).pop();
-              });
-
-          },
-          child: new Text(PickerLocalizations.of(context).cancelText)),
-      FlatButton(
-          onPressed: () {
-            Future.delayed(Duration.zero, () {
-              Navigator.of(context).pop();
-              ps.onConfirm(ps, ps.selecteds);
-              pe.onConfirm(pe, pe.selecteds);
-              });
-          },
-          child: new Text(PickerLocalizations.of(context).confirmText))
-    ];
-
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return new AlertDialog(
-            title: Text("Select Date Range"),
-            actions: actions,
-            content: Container(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text("Begin:"),
-                  ps.makePicker(),
-                  Text("End:"),
-                  pe.makePicker()
-                ],
-              ),
-            ),
-          );
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     maxWidth = MediaQuery.of(context).size.width;
@@ -246,21 +222,128 @@ class _HomeState extends State<Home> {
                 padding: EdgeInsets.all(0),
               ),
             ),
-            InkWell(
-              onTap: () {
-                showPickerDateRange(context);
-              },
-              child: Container(
-                margin: EdgeInsets.symmetric(vertical: 20),
-                color: backColor,
-                child: Container(
-                  margin: EdgeInsets.all(10),
-                  child: Text(
-                    "Periodo",
-                    style: getTextStyle(20, false, themeColor, "fontFamily"),
+            Column(
+              children: <Widget>[
+                //BIGIN DATE
+                RaisedButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
+                  elevation: 0,
+                  onPressed: () {
+                    DatePicker.showDatePicker(context,
+                        theme: DatePickerTheme(
+                          containerHeight: 210.0,
+                        ),
+                        showTitleActions: true,
+                        minTime: DateTime(2003, 1, 1),
+                        maxTime: DateTime(2007, 12, 31),
+                        onConfirm: (dateBigin) {
+                      print('confirm $dateBigin');
+                      _dateBigin =
+                          '${dateBigin.year} - ${dateBigin.month} - ${dateBigin.day}';
+                      setState(() {});
+                    }, currentTime: DateTime.now(), locale: LocaleType.en);
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 50.0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.date_range,
+                                    size: 18.0,
+                                    color: backColor,
+                                  ),
+                                  Text(
+                                    " $_dateBigin",
+                                    style: TextStyle(
+                                        color: backColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18.0),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                        Text(
+                          "  Change",
+                          style: TextStyle(
+                              color: backColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18.0),
+                        ),
+                      ],
+                    ),
                   ),
+                  color: Colors.white,
                 ),
-              ),
+                //END DATE
+                RaisedButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
+                  elevation: 0,
+                  onPressed: () {
+                    DatePicker.showDatePicker(context,
+                        theme: DatePickerTheme(
+                          containerHeight: 210.0,
+                        ),
+                        showTitleActions: true,
+                        minTime: DateTime(2003, 1, 1),
+                        maxTime: DateTime(2007, 12, 31), onConfirm: (dateEnd) {
+                      print('confirm $dateEnd');
+                      _dateEnd =
+                          '${dateEnd.year} - ${dateEnd.month} - ${dateEnd.day}';
+                      setState(() {});
+                    }, currentTime: DateTime.now(), locale: LocaleType.en);
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 50.0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.date_range,
+                                    size: 18.0,
+                                    color: backColor,
+                                  ),
+                                  Text(
+                                    " $_dateEnd",
+                                    style: TextStyle(
+                                        color: backColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18.0),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                        Text(
+                          "  Change",
+                          style: TextStyle(
+                              color: backColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18.0),
+                        ),
+                      ],
+                    ),
+                  ),
+                  color: Colors.white,
+                ),
+              ],
             ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,7 +357,7 @@ class _HomeState extends State<Home> {
                 ),
               ],
             ),
-            Expanded(child: list1(list))
+            Expanded(child: list1())
           ],
         ));
   }
