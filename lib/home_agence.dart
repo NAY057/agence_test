@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'home_components/relatorio.dart';
 
 class Home extends StatefulWidget {
-
   @override
   _HomeState createState() => _HomeState();
 }
@@ -18,52 +17,14 @@ class _HomeState extends State<Home> {
   double maxWidth;
   int segmentedControl;
   String tittle;
-  String newsType;
-  List list;
   String _dateBigin = "Periodo de Inicio";
   String _dateEnd = "Periodo de Final";
-/*   Future<List> getData() async {
-    //var url = 'http://bdagencetest.000webhostapp.com/get.php';
-    var url = "http://192.168.2.100/get.php";
-    http.Response response = await http.get(url);
-    print("ENTRE");
-    Map<String ,dynamic> data = jsonDecode(response.body);
-    //print(response.body.toString());
-    print(data);
-  } */
+  DateTime dateStart;
+  DateTime dateFinish;
 
-/*     Future<List>getData(encode) async {
-
-    final response = await http.get("https://bdagencetest.000webhostapp.com/get.php");
-    //print(response.body.toString());
-    dynamic encode = json.encode(response.body);
-    
-    //var data = json.decode(encode);
-    //Future<List> decodeData;
-    //data = decodeData;
-    //print(encode);
-    return encode;
-  } */
-
-/*   Future<List<UserInfo>> getData(newsType) async {
- 
-    String link = "https://bdagencetest.000webhostapp.com/get.php";
-    var res = await http
-        .get(Uri.encodeFull(link));
-      //print(res.body);
-      if (res.statusCode == 200) {
-        var data = json.decode(res.body);
-        var rest = data["UserInfo"] as List;
-        print(rest);
-        list = rest.map<UserInfo>((json) => UserInfo.fromJson(json)).toList();
-      }
-      print(list.toString());
-    return list;
-  } */
-
-  Future<List> getData() async {
+  Future<List>getData() async {
     final response =
-        await http.get("https://bdagencetest.000webhostapp.com/get.php");
+        await http.get("http://bdagencetest.000webhostapp.com/get.php");
     return json.decode(response.body);
   }
 
@@ -84,12 +45,25 @@ class _HomeState extends State<Home> {
     );
   }
 
+  void postValue() {
+    print("ENTRE");
+    print(dateStart);
+    print(dateFinish);
+    String url = "http://bdagencetest.000webhostapp.com/relatorio.php";
+    http.post(url, body: {
+      "dateBigin": dateStart.toString(),
+      "dateEnd": dateFinish.toString()
+    });
+    //final response = await http.post(url,body: {"biginDate":"2003/1/1","endDate":"2007/12/31"});
+    //   print(json.decode(response.body));
+  }
+
   Widget itemList(list) {
     return new ListView.builder(
       shrinkWrap: false,
       itemCount: list == null ? 0 : list.length,
       itemBuilder: (context, i) {
-    String userName = list[i]['no_usuario'];
+        String userName = list[i]['no_usuario'];
         return new Container(
             padding: const EdgeInsets.all(10.0),
             child: segmentedControl == 0
@@ -109,8 +83,13 @@ class _HomeState extends State<Home> {
                           children: <Widget>[
                             InkWell(
                               onTap: () {
+                                postValue();
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (BuildContext context) => Relatorio(userName: list[i]['no_usuario'],)));
+                                    builder: (BuildContext context) =>
+                                        Relatorio(
+                                            userName: list[i]['no_usuario'],
+                                            userCoName: list[i]['co_usuario'],
+                                            )));
                               },
                               child: Container(
                                 child: Icon(Icons.table_chart),
@@ -171,6 +150,8 @@ class _HomeState extends State<Home> {
         break;
     }
   }
+
+  selecDateRange(dateStart, dateFinish) {}
 
   @override
   void initState() {
@@ -241,8 +222,13 @@ class _HomeState extends State<Home> {
                       print('confirm $dateBigin');
                       _dateBigin =
                           '${dateBigin.year} - ${dateBigin.month} - ${dateBigin.day}';
-                      setState(() {});
-                    }, currentTime: DateTime.now(), locale: LocaleType.en);
+                      setState(() {
+                        dateStart = dateBigin;
+                        print(dateStart);
+                      });
+                    },
+                        currentTime: DateTime(2007, 12, 31),
+                        locale: LocaleType.en);
                   },
                   child: Container(
                     alignment: Alignment.center,
@@ -300,8 +286,13 @@ class _HomeState extends State<Home> {
                       print('confirm $dateEnd');
                       _dateEnd =
                           '${dateEnd.year} - ${dateEnd.month} - ${dateEnd.day}';
-                      setState(() {});
-                    }, currentTime: DateTime.now(), locale: LocaleType.en);
+                      setState(() {
+                        dateFinish = dateEnd;
+                        print(dateFinish);
+                      });
+                    },
+                        currentTime: DateTime(2007, 12, 31),
+                        locale: LocaleType.en);
                   },
                   child: Container(
                     alignment: Alignment.center,
